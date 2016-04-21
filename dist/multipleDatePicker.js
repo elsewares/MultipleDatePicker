@@ -25,6 +25,10 @@ angular.module('multipleDatePicker', [])
             $rootScope.$broadcast('handleMultipleDatePickerBroadcast');
         };
 
+        sharedService.broadcastModifiedDate = function (oldDate, newDate) {
+            $rootScope.$broadcast('multipleDatePickerModifiedDate', {'oldDate': oldDate, 'newDate': newDate});
+        };
+
         return sharedService;
     }])
     .directive('multipleDatePicker', ['$log', 'multipleDatePickerBroadcast', function ($log, multipleDatePickerBroadcast) {
@@ -70,6 +74,18 @@ angular.module('multipleDatePicker', [])
                  * */
                 highlightDays: '=?',
                 /*
+                 * Type: integer
+                 * Number of optional days to emphasize on either side of each highlightDays day. Default: 0
+                 */
+                bufferDays: '=?',
+                /*
+                 * Type: boolean
+                 * Determines whether click selects a new day, or starts transaction to modify an already-selected day (i.e. from the server) --
+                 * days that are not currently selected in the calendar or are not buffer days will not be selectable.
+                 * Defaults to false.
+                 */
+                modifyOnly: '=?',
+                /*
                  * Type: boolean
                  * Set all days off
                  * */
@@ -86,9 +102,9 @@ angular.module('multipleDatePicker', [])
                 disallowBackPastMonths: '=?',
                 /*
                  * Type: boolean
-                 * if true can't go in futur months after today's month
+                 * if true can't go in future months after today's month
                  * */
-                disallowGoFuturMonths: '=?',
+                disallowGoFutureMonths: '=?',
                 /*
                  * Type: boolean
                  * if true empty boxes will be filled with days of previous/next month
@@ -125,7 +141,7 @@ angular.module('multipleDatePicker', [])
             '<div class="text-center" ng-repeat="day in daysOfWeek">{{day}}</div>' +
             '</div>' +
             '<div class="picker-days-row">' +
-            '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth}">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
+            '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay }">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
             '</div>' +
             '</div>',
             link: function (scope) {
@@ -136,7 +152,7 @@ angular.module('multipleDatePicker', [])
                             previousMonth = moment(scope.month).subtract(1, 'month'),
                             nextMonth = moment(scope.month).add(1, 'month');
                         scope.disableBackButton = scope.disallowBackPastMonths && today.isAfter(previousMonth, 'month');
-                        scope.disableNextButton = scope.disallowGoFuturMonths && today.isBefore(nextMonth, 'month');
+                        scope.disableNextButton = scope.disallowGoFutureMonths && today.isBefore(nextMonth, 'month');
                     },
                     getDaysOfWeek = function () {
                         /*To display days of week names in moment.lang*/
@@ -191,6 +207,9 @@ angular.module('multipleDatePicker', [])
                     scope.generate();
                 }, true);
 
+                //internal scope variables
+                var dayToModify = null;
+
                 //default values
                 scope.month = scope.month || moment().startOf('day');
                 scope.days = [];
@@ -201,6 +220,9 @@ angular.module('multipleDatePicker', [])
                 scope.disableNextButton = false;
                 scope.daysOfWeek = getDaysOfWeek();
                 scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
+                scope.modifyOnly = scope.modifyOnly || false;
+                scope.bufferDays = scope.bufferDays + 1 || 0;
+                scope.showBufferDays = false;
 
                 /**
                  * Called when user clicks a date
@@ -222,19 +244,35 @@ angular.module('multipleDatePicker', [])
                         prevented = true;
                     };
 
-                    if (typeof scope.dayClick == 'function') {
-                        scope.dayClick(event, momentDate);
-                    }
-
-                    if (momentDate.selectable && !prevented) {
-                        momentDate.selected = !momentDate.selected;
-
+                    if (scope.modifyOnly) {
+                        if (!momentDate.selected) {
+                            scope.showBufferDays = false; //reset show of buffer days
+                            return; //do nothing else
+                        }
                         if (momentDate.selected) {
-                            scope.convertedDaysSelected.push(momentDate);
+                            dayToModify = momentDate.selected; //set the day to modify
+                            scope.showBufferDays = true; //show the buffer days
+                        }
+                        if (momentDate.bufferDay && dayToModify !== null) {
+                            scope.broadcastModifiedDate(dayToModify, momentDate);
                         } else {
-                            scope.convertedDaysSelected = scope.convertedDaysSelected.filter(function (date) {
-                                return date.valueOf() !== momentDate.valueOf();
-                            });
+                            return; //don't do anything with a buffer date unless there's a day being modified.
+                        }
+                    } else {
+                        if (typeof scope.dayClick == 'function') {
+                            scope.dayClick(event, momentDate);
+                        }
+
+                        if (momentDate.selectable && !prevented) {
+                            momentDate.selected = !momentDate.selected;
+
+                            if (momentDate.selected) {
+                                scope.convertedDaysSelected.push(momentDate);
+                            } else {
+                                scope.convertedDaysSelected = scope.convertedDaysSelected.filter(function (date) {
+                                    return date.valueOf() !== momentDate.valueOf();
+                                });
+                            }
                         }
                     }
                 };
@@ -308,6 +346,16 @@ angular.module('multipleDatePicker', [])
                     });
                 };
 
+                scope.isBufferDay = function (scope, date) {
+                    var isBuffer = [];
+                    angular.forEach(scope.convertedDaysSelected, function (selectedDay) {
+                        var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
+                        var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
+                        isBuffer.push(moment(date).isBetween(beforeBuffer, afterBuffer));
+                    });
+                    return isBuffer.some(function(element) { return element === true; });
+                };
+
                 /*Generate the calendar*/
                 scope.generate = function () {
                     var previousDay = moment(scope.month).date(0).day(scope.sundayFirstDay ? 0 : 1).subtract(1, 'day');
@@ -331,6 +379,7 @@ angular.module('multipleDatePicker', [])
                             }
                             date.selectable = !scope.isDayOff(scope, date);
                             date.selected = scope.isSelected(scope, date);
+                            date.bufferDay = !date.selected && date.selectable ? scope.isBufferDay(scope, date) : false;
                             date.today = date.isSame(now, 'day');
                             date.past = date.isBefore(now, 'day');
                             date.future = date.isAfter(now, 'day');
