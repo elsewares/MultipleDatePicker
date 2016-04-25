@@ -245,11 +245,11 @@ angular.module('multipleDatePicker', [])
                     };
 
                     if (scope.modifyOnly) {
+                        console.log(momentDate);
                         if (!momentDate.selected) {
                             scope.showBufferDays = false; //reset show of buffer days
                             dayToModify = null;
                             console.log('Any old day. No nothing. Reset buffers.');
-                            console.log(scope);
                             return; //do nothing else
                         }
                         if (momentDate.selected) {
@@ -257,9 +257,8 @@ angular.module('multipleDatePicker', [])
                             scope.showBufferDays = true; //show the buffer days
                             console.log('Date to modify selected.');
                             console.log(dayToModify);
-                            console.log(scope);
                         }
-                        if (momentDate.bufferDay && angular.isObject(dayToModify)) {
+                        if (momentDate.bufferDay && dayToModify._isAMomentObject) {
                             scope.broadcastModifiedDate(dayToModify, momentDate);
                             dayToModify = null;
                             scope.showBufferDays = false;

@@ -1,12 +1,12 @@
 {
   "name": "multipledatepicker-elsewares",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "authors": [
     "mgohin <mgohin@arca-computing.fr>",
     "elsewares <brian@elsewares.org>"
   ],
-  "description": "Mulitple date picker - Elsewares branch - based on arca-computing/MultipleDatePicker, v.1.4.1",
-  "main": ["dist/multipleDatePicker.min.js", "dist/multiple-date-picker.css"],
+  "description": "Mulitple date picker - Elsewares branch - based on arca-computing/MultipleDatePicker, v.0.0.5",
+  "main": ["dist/multipleDatePicker.js", "dist/multiple-date-picker.css"],
   "keywords": [
     "angular",
     "directive",
