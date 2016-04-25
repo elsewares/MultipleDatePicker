@@ -13,6 +13,11 @@
 @pickable-day-picked-background: #C6000B;
 @pickable-day-picked-color: #fff;
 
+@pickable-day-buffer-day-background: #72feb0;
+@pickable-day-buffer-day-color: #000;
+
+
+
 .text-center{
   text-align: center;
 }
@@ -79,6 +84,12 @@
 .picker-day:not(.picker-off):not(.picker-empty):hover {
   background-color: @pickable-day-picked-background;
   color: @pickable-day-picked-color;
+  cursor: pointer;
+}
+
+.picker-day.buffer-day {
+  background-color: @pickable-day-buffer-day-background;
+  color: @pickable-day-buffer-day-color;
   cursor: pointer;
 }
 
