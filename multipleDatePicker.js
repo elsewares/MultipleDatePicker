@@ -1,7 +1,7 @@
 /*
  @author : Maelig GOHIN For ARCA-Computing - www.arca-computing.fr
  @date: January 2016
- @version: 1.4.1
+ @version: 0.0.1  
 
  @description:  MultipleDatePicker is an Angular directive to show a simple calendar allowing user to select multiple dates.
  Css style can be changed by editing less or css stylesheet.
@@ -247,15 +247,24 @@ angular.module('multipleDatePicker', [])
                     if (scope.modifyOnly) {
                         if (!momentDate.selected) {
                             scope.showBufferDays = false; //reset show of buffer days
+                            console.log('Any old day. No nothing. Reset buffers.');
+                            console.log(scope);
                             return; //do nothing else
                         }
                         if (momentDate.selected) {
                             dayToModify = momentDate.selected; //set the day to modify
                             scope.showBufferDays = true; //show the buffer days
+                            console.log('Date to modify selected.');
+                            console.log(dayToModify);
+                            console.log(scope);
                         }
                         if (momentDate.bufferDay && dayToModify !== null) {
                             scope.broadcastModifiedDate(dayToModify, momentDate);
+                            console.log('Buffer day selected.');
+                            console.log('Modify date: ');
+                            console.log([dayToModify, momentDate]);
                         } else {
+                            console.log('Do nothing - not selected day, not buffer day.');
                             return; //don't do anything with a buffer date unless there's a day being modified.
                         }
                     } else {
