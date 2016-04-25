@@ -65,6 +65,11 @@
   color: #fff;
   cursor: pointer;
 }
+.picker-day.buffer-day {
+  background-color: #72feb0;
+  color: #000;
+  cursor: pointer;
+}
 .picker-day.picker-selected {
   background-color: #C6000B;
   color: #fff;
