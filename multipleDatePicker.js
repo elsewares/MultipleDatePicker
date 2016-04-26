@@ -117,9 +117,9 @@ angular.module('multipleDatePicker', [])
                 cssDaysOfSurroundingMonths: '=?',
                 /*
                  * Type: Array
-                 * Array of 'MMMM yyyy' strings to use in a select that replaces the normal calendar label.
+                 * Array of  objects {label: <String>, value: <MomentObject>} used for nav select and month select restriction
                  */
-                calendarSelect: '=?',
+                calendarRange: '=?',
                 /*
                  * Type: boolean
                  * if true events on empty boxes (or next/previous month) will be fired
@@ -140,7 +140,7 @@ angular.module('multipleDatePicker', [])
             '<div class="picker-top-row">' +
             '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="previousMonth()">&lt;</div>' +
             '<div class="text-center picker-month" ng-if="!calendarSelect">{{month.format(\'MMMM YYYY\')}}</div>' +
-            '<div class="text-center picker-month" ng-if="calendarSelect"><select ng-options="label for value in scope.calendarSelect" ng-change="changeCalendarMonth(value)"></select></div>' +
+            '<div class="text-center picker-month" ng-if="calendarSelect"><select ng-options="mo.value as mo.label for mo in scope.calendarRange" ng-model="month"></select></div>' +
             '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="nextMonth()">&gt;</div>' +
             '</div>' +
             '<div class="picker-days-week-row">' +
@@ -157,8 +157,8 @@ angular.module('multipleDatePicker', [])
                         var today = moment(),
                             previousMonth = moment(scope.month).subtract(1, 'month'),
                             nextMonth = moment(scope.month).add(1, 'month');
-                        scope.disableBackButton = scope.disallowBackPastMonths && today.isAfter(previousMonth, 'month');
-                        scope.disableNextButton = scope.disallowGoFutureMonths && today.isBefore(nextMonth, 'month');
+                        scope.disableBackButton = scope.disallowBackPastMonths && today.isAfter(previousMonth, 'month') || checkCalendarRange('start');
+                        scope.disableNextButton = scope.disallowGoFutureMonths && today.isBefore(nextMonth, 'month') || checkCalendarRange('end');
                     },
                     getDaysOfWeek = function () {
                         /*To display days of week names in moment.lang*/
@@ -185,7 +185,23 @@ angular.module('multipleDatePicker', [])
                         });
                         scope.convertedDaysSelected = momentDates;
                         scope.generate();
-                    };
+                    },
+                    checkCalendarRange = function (endpoint) {
+                        if (scope.calendarRange) {
+                            var endpoint = endpoint === 'start' ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
+                            return scope.month.format('MMMM YYYY') === endpoint.format('MMMM YYYY');
+                        }
+                        return false;
+                    }
+                  ;
+
+                scope.init = function () {
+                    if (calendarRange) {
+                        scope.month = calendarRange[0].value;
+                        scope.disableBackButton = true;
+                    }
+                    scope.generate();
+                };
 
                 /* broadcast functions*/
                 scope.$on('handleMultipleDatePickerBroadcast', function () {
@@ -229,7 +245,7 @@ angular.module('multipleDatePicker', [])
                 scope.modifyOnly = scope.modifyOnly || false;
                 scope.bufferDays = scope.bufferDays || 0;
                 scope.showBufferDays = false;
-                scope.calendarSelect = scope.calendarSelect || false;
+                scope.calendarRange = scope.calendarRange || false;
 
                 /**
                  * Called when user clicks a date
@@ -428,7 +444,7 @@ angular.module('multipleDatePicker', [])
                     checkNavigationButtons();
                 };
 
-                scope.generate();
+                scope.init();
             }
         };
     }]);
