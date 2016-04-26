@@ -116,6 +116,11 @@ angular.module('multipleDatePicker', [])
                  * */
                 cssDaysOfSurroundingMonths: '=?',
                 /*
+                 * Type: Array
+                 * Array of 'MMMM yyyy' strings to use in a select that replaces the normal calendar label.
+                 */
+                calendarSelect: '=?',
+                /*
                  * Type: boolean
                  * if true events on empty boxes (or next/previous month) will be fired
                  * */
@@ -134,7 +139,8 @@ angular.module('multipleDatePicker', [])
             template: '<div class="multiple-date-picker">' +
             '<div class="picker-top-row">' +
             '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="previousMonth()">&lt;</div>' +
-            '<div class="text-center picker-month">{{month.format(\'MMMM YYYY\')}}</div>' +
+            '<div class="text-center picker-month" ng-if="!calendarSelect">{{month.format(\'MMMM YYYY\')}}</div>' +
+            '<div class="text-center picker-month" ng-if="calendarSelect"><select ng-options="label for value in scope.calendarSelect" ng-change="changeCalendarMonth(value)"></select></div>' +
             '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="nextMonth()">&gt;</div>' +
             '</div>' +
             '<div class="picker-days-week-row">' +
@@ -223,6 +229,7 @@ angular.module('multipleDatePicker', [])
                 scope.modifyOnly = scope.modifyOnly || false;
                 scope.bufferDays = scope.bufferDays || 0;
                 scope.showBufferDays = false;
+                scope.calendarSelect = scope.calendarSelect || false;
 
                 /**
                  * Called when user clicks a date
@@ -361,9 +368,15 @@ angular.module('multipleDatePicker', [])
                 scope.isBufferDay = function (scope, date) {
                     var isBuffer = [];
                     angular.forEach(scope.convertedDaysSelected, function (selectedDay) {
-                        var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
-                        var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
-                        isBuffer.push(moment(date).isBetween(beforeBuffer, afterBuffer));
+                        var buffer;
+                        if (selectedDay.selected) {
+                            buffer = false;
+                        } else {
+                            var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
+                            var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
+                            buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
+                        }
+                        isBuffer.push(buffer);
                     });
                     return isBuffer.some(function(element) { return element === true; });
                 };
