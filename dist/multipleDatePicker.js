@@ -196,7 +196,7 @@ angular.module('multipleDatePicker', [])
                   ;
 
                 scope.init = function () {
-                    if (calendarRange) {
+                    if (scope.calendarRange) {
                         scope.month = calendarRange[0].value;
                         scope.disableBackButton = true;
                     }
