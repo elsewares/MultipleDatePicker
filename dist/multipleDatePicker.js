@@ -187,7 +187,7 @@ angular.module('multipleDatePicker', [])
                         scope.generate();
                     },
                     checkCalendarRange = function (endpoint) {
-                        if (scope.calendarRange) {
+                        if (scope.calendarRange && scope.calendarRange.length) {
                             endpoint = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
                             return scope.month.format('MMMM YYYY') === endpoint.format('MMMM YYYY');
                         }
