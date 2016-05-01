@@ -75,9 +75,15 @@ angular.module('multipleDatePicker', [])
                 highlightDays: '=?',
                 /*
                  * Type: integer
-                 * Number of optional days to emphasize on either side of each highlightDays day. Default: 0
+                 * Number of optional days to emphasize on either side of each daysSelected day. Default: 0
                  */
                 bufferDays: '=?',
+                /*
+                 * Type: Array of date strings.
+                 * Dates used to determine which days are buffer days in the calendar, originating from the
+                 * server.
+                 */
+                originalDaysSelected: '=?',
                 /*
                  * Type: boolean
                  * Determines whether click selects a new day, or starts transaction to modify an already-selected day (i.e. from the server) --
@@ -147,7 +153,7 @@ angular.module('multipleDatePicker', [])
             '<div class="text-center" ng-repeat="day in daysOfWeek">{{day}}</div>' +
             '</div>' +
             '<div class="picker-days-row">' +
-            '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay && showBufferDays }">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
+            '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay && showBufferDay(day.associatedOriginalDate) }">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
             '</div>' +
             '</div>',
             link: function (scope) {
@@ -179,19 +185,31 @@ angular.module('multipleDatePicker', [])
                     },
                     reset = function () {
                         var daysSelected = scope.daysSelected || [],
+                            originalDaysSelected = scope.originalDaysSelected || [],
+                            originalMomentDates = [],
                             momentDates = [];
                         daysSelected.map(function (timestamp) {
                             momentDates.push(moment(timestamp));
                         });
+                        originalDaysSelected.map(function (timestamp) {
+                            originalMomentDates.push(moment(timestamp));
+                        })
                         scope.convertedDaysSelected = momentDates;
+                        scope.convertedOriginalDaysSelected = originalMomentDates;
                         scope.generate();
                     },
                     checkCalendarRange = function (endpoint) {
                         if (scope.calendarRange && scope.calendarRange.length) {
-                            endpoint = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
-                            return scope.month.format('MMMM YYYY') === endpoint.format('MMMM YYYY');
+                            console.log(scope.calendarRange);
+                            var endpointMonth = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
+                            return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
                         }
                         return false;
+                    },
+                    getAssociatedOriginalDate = function (date) {
+                        var modifiedDateString = date.format('yyyy-MM-DD');
+                        var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
+                        return scope.originalDaysSelected[modifiedIndex];
                     }
                   ;
 
@@ -232,7 +250,7 @@ angular.module('multipleDatePicker', [])
                 //internal scope variables
                 var dayToModify = null;
 
-                //default values
+                //Default values.
                 scope.month = scope.month || moment().startOf('day');
                 scope.days = [];
                 scope.convertedDaysSelected = scope.convertedDaysSelected || [];
@@ -244,8 +262,10 @@ angular.module('multipleDatePicker', [])
                 scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
                 scope.modifyOnly = scope.modifyOnly || false;
                 scope.bufferDays = scope.bufferDays || 0;
-                scope.showBufferDays = false;
                 scope.calendarRange = scope.calendarRange || false;
+
+                // Methods.
+                scope.showBufferDays = showBufferDays;
 
                 /**
                  * Called when user clicks a date
@@ -269,14 +289,12 @@ angular.module('multipleDatePicker', [])
 
                     if (scope.modifyOnly) {
                         if (!momentDate.selected && !momentDate.bufferDay) {
-                            scope.showBufferDays = false; //reset show of buffer days
                             dayToModify = null;
                             console.log('Any old day. No nothing. Reset buffers.');
                             return; //do nothing else
                         }
                         if (momentDate.selected) {
                             dayToModify = momentDate; //set the day to modify
-                            scope.showBufferDays = true; //show the buffer days
                             console.log('Date to modify selected.');
                             console.log(dayToModify);
                             return;
@@ -284,7 +302,6 @@ angular.module('multipleDatePicker', [])
                         if (momentDate.bufferDay && dayToModify._isAMomentObject) {
                             multipleDatePickerBroadcast.broadcastModifiedDate(dayToModify, momentDate);
                             dayToModify = null;
-                            scope.showBufferDays = false;
                             console.log('Buffer day selected.');
                             console.log('Modify date: ');
                             console.log([dayToModify, momentDate]);
@@ -381,9 +398,15 @@ angular.module('multipleDatePicker', [])
                     });
                 };
 
+              /**
+               * Sets the bufferDay attribute on each date on the calendar.
+               * @param scope
+               * @param date
+               * @returns {boolean}
+               */
                 scope.isBufferDay = function (scope, date) {
                     var isBuffer = [];
-                    angular.forEach(scope.convertedDaysSelected, function (selectedDay) {
+                    angular.forEach(scope.convertedOriginalDaysSelected, function (selectedDay) {
                         var buffer;
                         if (selectedDay.selected) {
                             buffer = false;
@@ -397,8 +420,25 @@ angular.module('multipleDatePicker', [])
                     return isBuffer.some(function(element) { return element === true; });
                 };
 
-                /*Generate the calendar*/
-                scope.generate = function () {
+              /**
+               * Check that an active date to modify is associated with a given
+               * buffer day to highlight it in the calendar.
+               *
+               * @param associatedDate {String}
+               * @returns {boolean}
+               */
+                scope.showBufferDays = function (associatedDate) {
+                    if (dayToModify && associatedDate) {
+                        return dayToModify.format('yyyy-MM-DD') === associatedDate;
+                    }
+
+                    return false;
+                };
+
+              /**
+               * Generated the days in the calendar, setting attributes for each one.
+               */
+              scope.generate = function () {
                     var previousDay = moment(scope.month).date(0).day(scope.sundayFirstDay ? 0 : 1).subtract(1, 'day');
 
                     if (moment(scope.month).date(0).diff(previousDay, 'day') > 6) {
@@ -421,6 +461,9 @@ angular.module('multipleDatePicker', [])
                             date.selectable = !scope.isDayOff(scope, date);
                             date.selected = scope.isSelected(scope, date);
                             date.bufferDay = !date.selected && date.selectable ? scope.isBufferDay(scope, date) : false;
+                            if (date.bufferDay) {
+                                date.associatedOriginalDate = getAssociatedOriginalDate(date);
+                            }
                             date.today = date.isSame(now, 'day');
                             date.past = date.isBefore(now, 'day');
                             date.future = date.isAfter(now, 'day');

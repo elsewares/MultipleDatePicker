@@ -75,9 +75,15 @@ angular.module('multipleDatePicker', [])
                 highlightDays: '=?',
                 /*
                  * Type: integer
-                 * Number of optional days to emphasize on either side of each highlightDays day. Default: 0
+                 * Number of optional days to emphasize on either side of each daysSelected day. Default: 0
                  */
                 bufferDays: '=?',
+                /*
+                 * Type: Array of date strings.
+                 * Dates used to determine which days are buffer days in the calendar, originating from the
+                 * server.
+                 */
+                
                 /*
                  * Type: boolean
                  * Determines whether click selects a new day, or starts transaction to modify an already-selected day (i.e. from the server) --
@@ -188,8 +194,9 @@ angular.module('multipleDatePicker', [])
                     },
                     checkCalendarRange = function (endpoint) {
                         if (scope.calendarRange && scope.calendarRange.length) {
-                            endpoint = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
-                            return scope.month.format('MMMM YYYY') === endpoint.format('MMMM YYYY');
+                            console.log(scope.calendarRange);
+                            var endpointMonth = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
+                            return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
                         }
                         return false;
                     }
