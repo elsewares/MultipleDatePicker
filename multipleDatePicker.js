@@ -191,16 +191,17 @@ angular.module('multipleDatePicker', [])
                         daysSelected.map(function (timestamp) {
                             momentDates.push(moment(timestamp));
                         });
+
                         originalDaysSelected.map(function (timestamp) {
                             originalMomentDates.push(moment(timestamp));
-                        })
+                        });
+
                         scope.convertedDaysSelected = momentDates;
                         scope.convertedOriginalDaysSelected = originalMomentDates;
                         scope.generate();
                     },
                     checkCalendarRange = function (endpoint) {
-                        if (scope.calendarRange && scope.calendarRange.length) {
-                            console.log(scope.calendarRange);
+                        if (scope.calendarRange && scope.calendarRange.length > 0) {
                             var endpointMonth = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
                             return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
                         }
@@ -215,7 +216,7 @@ angular.module('multipleDatePicker', [])
 
                 scope.init = function () {
                     if (scope.calendarRange && scope.calendarRange.length) {
-                        scope.month = calendarRange[0].value;
+                        scope.month = scope.calendarRange[0].value;
                         scope.disableBackButton = true;
                     }
                     scope.generate();
