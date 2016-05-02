@@ -201,7 +201,7 @@ angular.module('multipleDatePicker', [])
                         scope.generate();
                     },
                     checkCalendarRange = function (endpoint) {
-                        if (scope.calendarRange && scope.calendarRange.length > 0) {
+                        if (scope.calendarRange && scope.calendarRange.length > 1) {
                             var endpointMonth = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
                             return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
                         }
@@ -214,9 +214,11 @@ angular.module('multipleDatePicker', [])
                     };
 
                 scope.init = function () {
-                    if (scope.calendarRange && scope.calendarRange.length) {
+                    if (scope.calendarRange && scope.calendarRange.length > 0) {
                         scope.month = scope.calendarRange[0].value;
                         scope.disableBackButton = true;
+                    } else {
+                        scope.month = moment(moment().format('MMMM YYYY'));
                     }
                     scope.generate();
                 };
@@ -484,6 +486,7 @@ angular.module('multipleDatePicker', [])
 
                     scope.days = days;
                     checkNavigationButtons();
+                    console.log(scope);
                 };
 
                 scope.init();
