@@ -206,11 +206,6 @@ angular.module('multipleDatePicker', [])
                             return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
                         }
                         return false;
-                    },
-                    getAssociatedOriginalDate = function (date) {
-                        var modifiedDateString = date.format('YYYY-MM-DD');
-                        var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
-                        return scope.originalDaysSelected[modifiedIndex];
                     };
 
                 scope.init = function () {
@@ -403,33 +398,39 @@ angular.module('multipleDatePicker', [])
                * Sets the bufferDay attribute on each date on the calendar.
                * @param scope
                * @param date
-               * @returns {boolean}
+               * @returns {Array}
                */
                 scope.isBufferDay = function (scope, date) {
-                    var isBuffer = [];
+                    var bufferArray = [];
                     angular.forEach(scope.convertedOriginalDaysSelected, function (selectedDay) {
                         var buffer;
                         var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
                         var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
                         buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
-                        isBuffer.push(buffer);
+                        if (buffer) {
+                            bufferArray.push(selectedDay.format('YYYY-MM-DD'));
+                        }
                     });
-                    return isBuffer.some(function(element) { return element === true; });
+                    return bufferArray;
                 };
 
               /**
                * Check that an active date to modify is associated with a given
                * buffer day to highlight it in the calendar.
                *
-               * @param associatedDate {String}
+               * @param associatedDateArray {Array}
                * @returns {boolean}
                */
-                scope.showBufferDays = function (associatedDate) {
-                    if (dayToModify && associatedDate) {
-                        return dayToModify.format('yyyy-MM-DD') === associatedDate;
+                scope.showBufferDays = function (associatedDateArray) {
+                    var showArray = [];
+
+                    if (dayToModify && associatedDateArray.length > 0) {
+                        angular.forEach(associatedDateArray, function (date) {
+                            showArray.push(dayToModify.format('YYYY-MM-DD') === date.format('YYYY-MM-DD'));
+                        });
                     }
 
-                    return false;
+                    return showArray.some(function (e) { return e === true; });
                 };
 
               /**
@@ -458,9 +459,6 @@ angular.module('multipleDatePicker', [])
                             date.selectable = !scope.isDayOff(scope, date);
                             date.selected = scope.isSelected(scope, date);
                             date.bufferDay = !date.selected && date.selectable ? scope.isBufferDay(scope, date) : false;
-                            if (date.bufferDay) {
-                                date.associatedOriginalDate = getAssociatedOriginalDate(date);
-                            }
                             date.today = date.isSame(now, 'day');
                             date.past = date.isBefore(now, 'day');
                             date.future = date.isAfter(now, 'day');
