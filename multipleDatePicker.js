@@ -409,13 +409,9 @@ angular.module('multipleDatePicker', [])
                     var isBuffer = [];
                     angular.forEach(scope.convertedOriginalDaysSelected, function (selectedDay) {
                         var buffer;
-                        if (selectedDay.selected) {
-                            buffer = false;
-                        } else {
-                            var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
-                            var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
-                            buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
-                        }
+                        var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
+                        var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
+                        buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
                         isBuffer.push(buffer);
                     });
                     return isBuffer.some(function(element) { return element === true; });
