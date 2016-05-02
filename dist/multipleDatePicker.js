@@ -431,7 +431,7 @@ angular.module('multipleDatePicker', [])
                 scope.showBufferDays = function (day) {
                     var showArray = [];
 
-                    if (dayToModify.selected && day.bufferDay.length > 0) {
+                    if (dayToModify && day.bufferDay.length > 0) {
                         angular.forEach(day.bufferDay, function (date) {
                             var originalDate = moment(dayToModify.originalDate);
                             showArray.push(originalDate.format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD'));
