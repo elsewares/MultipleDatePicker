@@ -153,7 +153,9 @@ angular.module('multipleDatePicker', [])
             '<div class="text-center" ng-repeat="day in daysOfWeek">{{day}}</div>' +
             '</div>' +
             '<div class="picker-days-row">' +
-            '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay && showBufferDay(day.associatedOriginalDate) }">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
+            '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ' +
+                'ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ' +
+                'ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay.length && showBufferDays(day) }">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
             '</div>' +
             '</div>',
             link: function (scope) {
@@ -421,11 +423,11 @@ angular.module('multipleDatePicker', [])
                * @param associatedDateArray {Array}
                * @returns {boolean}
                */
-                scope.showBufferDays = function (associatedDateArray) {
+                scope.showBufferDays = function (day) {
                     var showArray = [];
 
-                    if (dayToModify && associatedDateArray.length > 0) {
-                        angular.forEach(associatedDateArray, function (date) {
+                    if (dayToModify && day.bufferDay.length > 0) {
+                        angular.forEach(day.bufferDay, function (date) {
                             showArray.push(dayToModify.format('YYYY-MM-DD') === date.format('YYYY-MM-DD'));
                         });
                     }
