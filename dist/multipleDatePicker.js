@@ -208,7 +208,12 @@ angular.module('multipleDatePicker', [])
                             return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
                         }
                         return false;
-                    };
+                    },
+                    getAssociatedOriginalDate = function (date) {
+                        var modifiedDateString = date.format('YYYY-MM-DD');
+                        var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
+                        return scope.originalDaysSelected[modifiedIndex];
+                };
 
                 scope.init = function () {
                     if (scope.calendarRange && scope.calendarRange.length > 0) {
@@ -426,9 +431,9 @@ angular.module('multipleDatePicker', [])
                 scope.showBufferDays = function (day) {
                     var showArray = [];
 
-                    if (dayToModify && day.bufferDay.length > 0) {
+                    if (dayToModify.selected && day.bufferDay.length > 0) {
                         angular.forEach(day.bufferDay, function (date) {
-                            showArray.push(dayToModify.format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD'));
+                            showArray.push(dayToModify.originalDate.format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD'));
                         });
                     }
 
@@ -460,6 +465,9 @@ angular.module('multipleDatePicker', [])
                             }
                             date.selectable = !scope.isDayOff(scope, date);
                             date.selected = scope.isSelected(scope, date);
+                            if (date.selected) {
+                                date.originalDate = getAssociatedOriginalDate(date);
+                            }
                             date.bufferDay = !date.selected && date.selectable ? scope.isBufferDay(scope, date) : false;
                             date.today = date.isSame(now, 'day');
                             date.past = date.isBefore(now, 'day');
