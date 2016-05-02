@@ -208,7 +208,7 @@ angular.module('multipleDatePicker', [])
                         return false;
                     },
                     getAssociatedOriginalDate = function (date) {
-                        var modifiedDateString = date.format('yyyy-MM-DD');
+                        var modifiedDateString = date.format('YYYY-MM-DD');
                         var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
                         return scope.originalDaysSelected[modifiedIndex];
                     };
