@@ -211,8 +211,7 @@ angular.module('multipleDatePicker', [])
                         var modifiedDateString = date.format('yyyy-MM-DD');
                         var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
                         return scope.originalDaysSelected[modifiedIndex];
-                    }
-                  ;
+                    };
 
                 scope.init = function () {
                     if (scope.calendarRange && scope.calendarRange.length) {
@@ -266,7 +265,6 @@ angular.module('multipleDatePicker', [])
                 scope.calendarRange = scope.calendarRange || false;
 
                 // Methods.
-                scope.showBufferDays = showBufferDays;
 
                 /**
                  * Called when user clicks a date
