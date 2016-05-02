@@ -433,7 +433,8 @@ angular.module('multipleDatePicker', [])
 
                     if (dayToModify.selected && day.bufferDay.length > 0) {
                         angular.forEach(day.bufferDay, function (date) {
-                            showArray.push(dayToModify.originalDate.format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD'));
+                            var originalDate = moment(dayToModify.originalDate);
+                            showArray.push(originalDate.format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD'));
                         });
                     }
 
