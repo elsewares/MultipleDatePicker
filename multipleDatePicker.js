@@ -211,14 +211,19 @@ angular.module('multipleDatePicker', [])
                         return false;
                     },
                     getAssociatedOriginalDate = function (date) {
+                        date = momentize(date);
                         var modifiedDateString = date.format('YYYY-MM-DD');
                         var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
                         return scope.originalDaysSelected[modifiedIndex];
                     },
                     getAssociatedModifiedDate = function (date) {
+                        date = momentize(date);
                         var originalDateString = date.format('YYYY-MM-DD');
                         var originalIndex = scope.originalDaysSelected.indexOf(originalDateString);
                         return scope.daysSelected[originalIndex];
+                    },
+                    momentize = function (date) {
+                        return moment(date);
                     };
 
                 scope.init = function () {
