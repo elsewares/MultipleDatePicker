@@ -191,7 +191,7 @@ angular.module('multipleDatePicker', [])
                             originalMomentDates = [],
                             momentDates = [];
 
-                        daysSelected.map(function (timestamp, index) {
+                        daysSelected.map(function (timestamp) {
                             momentDates.push(timestamp === 'skipped' ? 'skipped' : moment(timestamp));
                         });
 
@@ -214,7 +214,7 @@ angular.module('multipleDatePicker', [])
                         date = momentize(date);
                         var dateString, dateIndex, dateArray;
                         dateString = date.format('YYYY-MM-DD');
-                        dateArray = type === 'original' ? 'originalDaysSelected' : 'daySelected';
+                        dateArray = type === 'original' ? 'originalDaysSelected' : 'daysSelected';
                         return scope[dateArray].indexOf(dateString);
                     },
                     getAssociatedOriginalDate = function (date) {
@@ -436,7 +436,7 @@ angular.module('multipleDatePicker', [])
                */
                 scope.isBufferDay = function (scope, date) {
                     var bufferArray = [];
-                    if (scope.convertedOriginalDaysSelected.length) {
+                    if (scope.convertedOriginalDaysSelected && scope.convertedOriginalDaysSelected.length) {
                         angular.forEach(scope.convertedOriginalDaysSelected, function (selectedDay) {
                             var buffer;
                             var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
