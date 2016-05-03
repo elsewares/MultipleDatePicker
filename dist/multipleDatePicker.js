@@ -210,17 +210,25 @@ angular.module('multipleDatePicker', [])
                         }
                         return false;
                     },
-                    getAssociatedOriginalDate = function (date) {
+                    getAssociatedDateIndex = function (date, type) {
                         date = momentize(date);
-                        var modifiedDateString = date.format('YYYY-MM-DD');
-                        var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
-                        return scope.originalDaysSelected[modifiedIndex];
+                        var dateString, dateIndex, dateArray;
+                        dateString = date.format('YYYY-MM-DD');
+                        dateArray = type === 'original' ? 'originalDaysSelected' : 'daySelected';
+                        return scope[dateArray].indexOf(dateString);
+                    },
+                    getAssociatedOriginalDate = function (date) {
+                        return scope.originalDaysSelected[getAssociatedDateIndex(date, 'modified')];
                     },
                     getAssociatedModifiedDate = function (date) {
+                        return scope.daysSelected[getAssociatedDateIndex(date, 'modified')];
+                    },
+                    setAssociatedModifiedDate = function (date, value) {
                         date = momentize(date);
-                        var originalDateString = date.format('YYYY-MM-DD');
-                        var originalIndex = scope.originalDaysSelected.indexOf(originalDateString);
-                        return scope.daysSelected[originalIndex];
+                        value = value ? value : date;
+                        if (getAssociatedOriginalDate(date)) {
+                            scope.daysSelected[getAssociatedDateIndex(date, 'original')] = value;
+                        }
                     },
                     momentize = function (date) {
                         return moment(date);
@@ -306,6 +314,7 @@ angular.module('multipleDatePicker', [])
                             if (getAssociatedOriginalDate(momentDate)) { //check if it was a de-selected date
                                 momentDate.selected = true;
                                 multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), angular.copy(momentDate));
+                                setAssociatedModifiedDate(momentDate);
                                 return;
                             } else { //plain ol' day - do nothing.
                                 console.log('Any old day. No nothing. Reset buffers.');
@@ -314,12 +323,15 @@ angular.module('multipleDatePicker', [])
                         }
                         if (momentDate.selected) { //currently selected date - deselect
                             momentDate.selected = false;
+                            setAssociatedModifiedDate(momentDate, 'skipped');
                             multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), 'skipped');
                             return;
                         }
                         if (momentDate.bufferDay) {
                             var associatedDay = getAssociatedOriginalDate(momentDate);
                             multipleDatePickerBroadcast.broadcastModifiedDate(associatedDay, momentDate);
+                            setAssociatedModifiedDate(momentDate);
+
                             console.log('Buffer day selected.');
                             console.log('Modify date: ');
                             console.log([associatedDay, momentDate]);
@@ -424,15 +436,17 @@ angular.module('multipleDatePicker', [])
                */
                 scope.isBufferDay = function (scope, date) {
                     var bufferArray = [];
-                    angular.forEach(scope.convertedOriginalDaysSelected, function (selectedDay) {
-                        var buffer;
-                        var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
-                        var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
-                        buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
-                        if (buffer) {
-                            bufferArray.push(selectedDay.format('YYYY-MM-DD'));
-                        }
-                    });
+                    if (scope.convertedOriginalDaysSelected.length) {
+                        angular.forEach(scope.convertedOriginalDaysSelected, function (selectedDay) {
+                            var buffer;
+                            var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
+                            var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
+                            buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
+                            if (buffer) {
+                                bufferArray.push(selectedDay.format('YYYY-MM-DD'));
+                            }
+                        });
+                    }
                     return bufferArray;
                 };
 
