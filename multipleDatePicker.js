@@ -221,7 +221,7 @@ angular.module('multipleDatePicker', [])
                         return scope.originalDaysSelected[getAssociatedDateIndex(date, 'modified')];
                     },
                     getAssociatedModifiedDate = function (date) {
-                        return scope.daysSelected[getAssociatedDateIndex(date, 'modified')];
+                        return scope.daysSelected[getAssociatedDateIndex(date, 'original')];
                     },
                     setAssociatedModifiedDate = function (date, value) {
                         date = momentize(date);
