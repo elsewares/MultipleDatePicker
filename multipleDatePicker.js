@@ -458,12 +458,14 @@ angular.module('multipleDatePicker', [])
                * @returns {boolean}
                */
                 scope.showBufferDays = function (day) {
+                    var showArray = [];
                     if (day.bufferDay.length > 0) {
                         angular.forEach(day.bufferDay, function (date) {
                             var modifiedDate = getAssociatedModifiedDate(date);
-                            return modifiedDate === 'skipped';
+                            showArray.push(modifiedDate === 'skipped');
                         });
                     }
+                    return showArray.some(function (e) { return e === true; });
                 };
 
               /**
