@@ -190,8 +190,9 @@ angular.module('multipleDatePicker', [])
                             originalDaysSelected = scope.originalDaysSelected || [],
                             originalMomentDates = [],
                             momentDates = [];
-                        daysSelected.map(function (timestamp) {
-                            momentDates.push(moment(timestamp));
+
+                        daysSelected.map(function (timestamp, index) {
+                            momentDates.push(timestamp === 'skipped' ? 'skipped' : moment(timestamp));
                         });
 
                         originalDaysSelected.map(function (timestamp) {
@@ -213,7 +214,12 @@ angular.module('multipleDatePicker', [])
                         var modifiedDateString = date.format('YYYY-MM-DD');
                         var modifiedIndex = scope.daysSelected.indexOf(modifiedDateString);
                         return scope.originalDaysSelected[modifiedIndex];
-                };
+                    },
+                    getAssociatedModifiedDate = function (date) {
+                        var originalDateString = date.format('YYYY-MM-DD');
+                        var originalIndex = scope.originalDaysSelected.indexOf(originalDateString);
+                        return scope.daysSelected[originalIndex];
+                    };
 
                 scope.init = function () {
                     if (scope.calendarRange && scope.calendarRange.length > 0) {
@@ -222,6 +228,7 @@ angular.module('multipleDatePicker', [])
                     } else {
                         scope.month = moment(moment().format('MMMM YYYY'));
                     }
+
                     scope.generate();
                 };
 
@@ -252,7 +259,6 @@ angular.module('multipleDatePicker', [])
                 }, true);
 
                 //internal scope variables
-                var dayToModify = null;
 
                 //Default values.
                 scope.month = scope.month || moment().startOf('day');
@@ -291,28 +297,27 @@ angular.module('multipleDatePicker', [])
                     };
 
                     if (scope.modifyOnly) {
-                        if (!momentDate.selected && !momentDate.bufferDay) {
-                            dayToModify = null;
-                            console.log('Any old day. No nothing. Reset buffers.');
-                            return; //do nothing else
-                        }
-                        if (momentDate.selected) {
-                            if (dateToModify === null) {
-                                dayToModify = momentDate; //set the day to modify
-                                console.log('Date to modify selected.');
-                                console.log(dayToModify);
-                            } else {
-                                dayToModify = null;
-                                console.log('Day to modify cancelled.');
+                        if (!momentDate.selected && !momentDate.bufferDay) { //unselected and not a buffer day
+                            if (getAssociatedOriginalDate(momentDate)) { //check if it was a de-selected date
+                                momentDate.selected = true;
+                                multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), angular.copy(momentDate));
+                                return;
+                            } else { //plain ol' day - do nothing.
+                                console.log('Any old day. No nothing. Reset buffers.');
+                                return;
                             }
+                        }
+                        if (momentDate.selected) { //currently selected date - deselect
+                            momentDate.selected = false;
+                            multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), 'skipped');
                             return;
                         }
-                        if (momentDate.bufferDay && dayToModify._isAMomentObject) {
-                            multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(dayToModify), momentDate);
-                            dayToModify = null;
+                        if (momentDate.bufferDay) {
+                            var associatedDay = getAssociatedOriginalDate(momentDate);
+                            multipleDatePickerBroadcast.broadcastModifiedDate(associatedDay, momentDate);
                             console.log('Buffer day selected.');
                             console.log('Modify date: ');
-                            console.log([dayToModify, momentDate]);
+                            console.log([associatedDay, momentDate]);
                             return;
                         } else {
                             console.log('Do nothing - no day selected for buffer day.');
@@ -402,7 +407,7 @@ angular.module('multipleDatePicker', [])
                 /*Check if the date is selected*/
                 scope.isSelected = function (scope, date) {
                     return scope.convertedDaysSelected.some(function (d) {
-                        return date.isSame(d, 'day');
+                        return d === 'skipped' ? false : date.isSame(d, 'day');
                     });
                 };
 
@@ -434,16 +439,12 @@ angular.module('multipleDatePicker', [])
                * @returns {boolean}
                */
                 scope.showBufferDays = function (day) {
-                    var showArray = [];
-
-                    if (dayToModify && day.bufferDay.length > 0) {
+                    if (day.bufferDay.length > 0) {
                         angular.forEach(day.bufferDay, function (date) {
-                            var originalDate = moment(dayToModify.originalDate);
-                            showArray.push(originalDate.format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD'));
+                            var modifiedDate = getAssociatedModifiedDate(date);
+                            return modifiedDate === 'skipped';
                         });
                     }
-
-                    return showArray.some(function (e) { return e === true; });
                 };
 
               /**
