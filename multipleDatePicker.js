@@ -297,13 +297,18 @@ angular.module('multipleDatePicker', [])
                             return; //do nothing else
                         }
                         if (momentDate.selected) {
-                            dayToModify = momentDate; //set the day to modify
-                            console.log('Date to modify selected.');
-                            console.log(dayToModify);
+                            if (dateToModify === null) {
+                                dayToModify = momentDate; //set the day to modify
+                                console.log('Date to modify selected.');
+                                console.log(dayToModify);
+                            } else {
+                                dayToModify = null;
+                                console.log('Day to modify cancelled.');
+                            }
                             return;
                         }
                         if (momentDate.bufferDay && dayToModify._isAMomentObject) {
-                            multipleDatePickerBroadcast.broadcastModifiedDate(dayToModify, momentDate);
+                            multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(dayToModify), momentDate);
                             dayToModify = null;
                             console.log('Buffer day selected.');
                             console.log('Modify date: ');

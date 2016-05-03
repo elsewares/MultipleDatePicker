@@ -61,17 +61,17 @@
   font-weight: bold;
 }
 .picker-day:not(.picker-off):not(.picker-empty):hover {
-  background-color: #C6000B;
+  background-color: #1f919b;
   color: #fff;
   cursor: pointer;
 }
 .picker-day.buffer-day {
-  background-color: #72feb0;
+  background-color: #ccc;
   color: #000;
   cursor: pointer;
 }
 .picker-day.picker-selected {
-  background-color: #C6000B;
+  background-color: #1f919b;
   color: #fff;
 }
 .picker-day.picker-off,
