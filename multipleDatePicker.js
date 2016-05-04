@@ -332,16 +332,15 @@ angular.module('multipleDatePicker', [])
                         }
                         if (momentDate.bufferDay) {
                             var associatedDay = getAssociatedOriginalDate(momentDate);
-                            multipleDatePickerBroadcast.broadcastModifiedDate(associatedDay, momentDate);
-                            setAssociatedModifiedDate(momentDate);
-
-                            console.log('Buffer day selected.');
-                            console.log('Modify date: ');
-                            console.log([associatedDay, momentDate]);
+                            if (scope.isDeselectedDay(associatedDay)) {
+                                multipleDatePickerBroadcast.broadcastModifiedDate(associatedDay, momentDate);
+                                setAssociatedModifiedDate(momentDate);
+                                console.log('Buffer day selected.');
+                                console.log([associatedDay, momentDate]);
+                                return;
+                            }
+                            console.log('Buffer day clicked - original day not deselected. Do nothing.');
                             return;
-                        } else {
-                            console.log('Do nothing - no day selected for buffer day.');
-                            return; //don't do anything with a buffer date unless there's a day being modified.
                         }
                     } else {
                         if (typeof scope.dayClick == 'function') {
@@ -432,6 +431,18 @@ angular.module('multipleDatePicker', [])
                 };
 
               /**
+               * Checks if date is an original pay date, and currently does not have a
+               * modified date.
+               * 
+               * @param scope
+               * @param date
+               * @returns {boolean}
+               */
+                scope.isDeselectedDay = function (scope, date) {
+                    return getAssociatedDateIndex(date, 'original') > -1 && getAssociatedModifiedDate(date) === 'skipped';
+                };
+
+              /**
                * Sets the bufferDay attribute on each date on the calendar.
                * @param scope
                * @param date
@@ -469,10 +480,6 @@ angular.module('multipleDatePicker', [])
                         });
                     }
                     return showArray.some(function (e) { return e === true; });
-                };
-
-                scope.isDeselectedDay = function (scope, date) {
-                  return getAssociatedDateIndex(date, 'original') > -1 && getAssociatedModifiedDate(date) === 'skipped';
                 };
 
               /**
