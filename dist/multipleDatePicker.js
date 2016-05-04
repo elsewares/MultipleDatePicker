@@ -155,7 +155,10 @@ angular.module('multipleDatePicker', [])
             '<div class="picker-days-row">' +
             '<div class="text-center picker-day {{!day.otherMonth || showDaysOfSurroundingMonths ? day.css : \'\'}} {{day.otherMonth ? cssDaysOfSurroundingMonths : \'\'}}" title="{{day.title}}" ' +
                 'ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" ' +
-                'ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future, \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay.length > 0 && showBufferDays(day) }">{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}</div>' +
+                'ng-class="{\'picker-selected\':day.selected, \'picker-off\':!day.selectable, \'today\':day.today,\'past\':day.past,\'future\':day.future,' +
+                ' \'picker-other-month\':day.otherMonth, \'buffer-day\':day.bufferDay.length > 0 && showBufferDays(day), \'deselected-day\': day.deselected }"> ' +
+                '{{day ? day.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.format(\'D\') : \'\'}}' +
+            '</div>' +
             '</div>' +
             '</div>',
             link: function (scope) {
@@ -468,6 +471,10 @@ angular.module('multipleDatePicker', [])
                     return showArray.some(function (e) { return e === true; });
                 };
 
+                scope.isDeselectedDay = function (scope, date) {
+                  return getAssociatedDateIndex(date, 'original') > -1;
+                };
+
               /**
                * Generated the days in the calendar, setting attributes for each one.
                */
@@ -497,6 +504,7 @@ angular.module('multipleDatePicker', [])
                                 date.originalDate = getAssociatedOriginalDate(date);
                             }
                             date.bufferDay = !date.selected && date.selectable ? scope.isBufferDay(scope, date) : false;
+                            date.deselected = !date.selected && date.bufferDay ? scope.isDeselectedDay(scope, date) : false;
                             date.today = date.isSame(now, 'day');
                             date.past = date.isBefore(now, 'day');
                             date.future = date.isAfter(now, 'day');

@@ -16,7 +16,10 @@
 @pickable-day-buffer-day-background: #ccc;
 @pickable-day-buffer-day-color: #000;
 
+@pickable-day-deselected-day-background: #666;
+@pickable-day-deselected-day-color: #fff;
 
+@pickable-day-hover-background: desaturate(@pickable-day-picked-background, 30%);
 
 .text-center{
   text-align: center;
@@ -90,6 +93,12 @@
 .picker-day.buffer-day {
   background-color: @pickable-day-buffer-day-background;
   color: @pickable-day-buffer-day-color;
+  cursor: pointer;
+}
+
+.picker-day.deselected-day {
+  background-color: @pickable-day-deselected-day-background;
+  color: @pickable-day-deselected-day-color;
   cursor: pointer;
 }
 
