@@ -472,7 +472,7 @@ angular.module('multipleDatePicker', [])
                 };
 
                 scope.isDeselectedDay = function (scope, date) {
-                  return getAssociatedDateIndex(date, 'original') > -1;
+                  return getAssociatedDateIndex(date, 'original') > -1 && getAssociatedModifiedDate(date) === 'skipped';
                 };
 
               /**
