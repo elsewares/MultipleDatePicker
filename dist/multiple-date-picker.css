@@ -61,7 +61,7 @@
   font-weight: bold;
 }
 .picker-day:not(.picker-off):not(.picker-empty):hover {
-  background-color: #1f919b;
+  background-color: #7fb3bf;
   color: #fff;
   cursor: pointer;
 }
