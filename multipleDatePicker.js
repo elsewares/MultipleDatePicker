@@ -318,6 +318,7 @@ angular.module('multipleDatePicker', [])
                                 momentDate.selected = true;
                                 multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), angular.copy(momentDate));
                                 setAssociatedModifiedDate(momentDate);
+                                console.log('Deselected original date re-selected.');
                                 return;
                             } else { //plain ol' day - do nothing.
                                 console.log('Any old day. No nothing. Reset buffers.');
@@ -328,6 +329,7 @@ angular.module('multipleDatePicker', [])
                             momentDate.selected = false;
                             setAssociatedModifiedDate(momentDate, 'skipped');
                             multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), 'skipped');
+                            console.log('Date deselected.');
                             return;
                         }
                         if (momentDate.bufferDay) {
@@ -338,9 +340,10 @@ angular.module('multipleDatePicker', [])
                                 console.log('Buffer day selected.');
                                 console.log([associatedDay, momentDate]);
                                 return;
+                            } else {
+                                console.log('Buffer day clicked - original day not deselected. Do nothing.');
+                                return;
                             }
-                            console.log('Buffer day clicked - original day not deselected. Do nothing.');
-                            return;
                         }
                     } else {
                         if (typeof scope.dayClick == 'function') {
@@ -433,7 +436,7 @@ angular.module('multipleDatePicker', [])
               /**
                * Checks if date is an original pay date, and currently does not have a
                * modified date.
-               * 
+               *
                * @param scope
                * @param date
                * @returns {boolean}
@@ -455,7 +458,7 @@ angular.module('multipleDatePicker', [])
                             var buffer;
                             var beforeBuffer = moment(selectedDay).subtract(scope.bufferDays, 'days');
                             var afterBuffer = moment(selectedDay).add(scope.bufferDays, 'days');
-                            buffer = moment(date).isBetween(beforeBuffer, afterBuffer);
+                            buffer = moment(date).isBetween(beforeBuffer, afterBuffer) && scope.isDeselectedDay(scope, selectedDay);
                             if (buffer) {
                                 bufferArray.push(selectedDay.format('YYYY-MM-DD'));
                             }
@@ -533,7 +536,6 @@ angular.module('multipleDatePicker', [])
 
                     scope.days = days;
                     checkNavigationButtons();
-                    console.log(scope);
                 };
 
                 scope.init();
