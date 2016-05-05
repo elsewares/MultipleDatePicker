@@ -145,8 +145,10 @@ angular.module('multipleDatePicker', [])
           template: '<div class="multiple-date-picker">' +
           '<div class="picker-top-row">' +
           '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="previousMonth()">&lt;</div>' +
-          '<div class="text-center picker-month" ng-if="!calendarSelect">{{month.format(\'MMMM YYYY\')}}</div>' +
-          '<div class="text-center picker-month" ng-if="calendarSelect"><select ng-options="mo.value as mo.label for mo in scope.calendarRange" ng-model="month"></select></div>' +
+          '<div class="text-center picker-month" ng-if="calendarRange.length === 0">{{month.format(\'MMMM YYYY\')}}</div>' +
+          '<div class="text-center picker-month" ng-if="calendarRange.length !== 0">' +
+          '<select ng-options="mo as mo for mo in calendarRange" ng-model="selectMonth" ng-init="selectMonth = calendarRange[0]" ng-change="changeSelectMonth(selectMonth)"></select>' +
+          '</div>' +
           '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="nextMonth()">&gt;</div>' +
           '</div>' +
           '<div class="picker-days-week-row">' +
@@ -209,8 +211,8 @@ angular.module('multipleDatePicker', [])
                 },
                 checkCalendarRange = function (endpoint) {
                     if (scope.calendarRange && scope.calendarRange.length > 1) {
-                        var endpointMonth = (endpoint === 'start') ? scope.calendarRange[0].value : scope.calendarRange[scope.calendarRange.length - 1].value;
-                        return scope.month.format('MMMM YYYY') === endpointMonth.format('MMMM YYYY');
+                        var endpointMonth = (endpoint === 'start') ? scope.calendarRange[0] : scope.calendarRange[scope.calendarRange.length - 1];
+                        return scope.month.format('MMMM YYYY') === momentize(endpointMonth).format('MMMM YYYY');
                     }
                     return false;
                 },
@@ -288,6 +290,7 @@ angular.module('multipleDatePicker', [])
 
               //Default values.
               scope.month = scope.month || moment().startOf('day');
+              scope.selectMonth = scope.selectMonth || scope.calendarRange ? scope.calendarRange[0] : moment().startOf('day');
               scope.days = [];
               scope.convertedDaysSelected = scope.convertedDaysSelected || [];
               scope.weekDaysOff = scope.weekDaysOff || [];
@@ -298,7 +301,9 @@ angular.module('multipleDatePicker', [])
               scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
               scope.modifyOnly = scope.modifyOnly || false;
               scope.bufferDays = scope.bufferDays || 0;
-              scope.calendarRange = scope.calendarRange || false;
+              scope.calendarRange = scope.calendarRange || [];
+
+              debugLog(scope.calendarRange);
 
               // Methods.
 
@@ -407,6 +412,7 @@ angular.module('multipleDatePicker', [])
                   if (!scope.disableBackButton) {
                       var oldMonth = moment(scope.month);
                       scope.month = scope.month.subtract(1, 'month');
+                      scope.selectMonth = scope.month.format('MMMM YYYY');
                       if (typeof scope.monthChanged == 'function') {
                           scope.monthChanged(scope.month, oldMonth);
                       }
@@ -419,11 +425,21 @@ angular.module('multipleDatePicker', [])
                   if (!scope.disableNextButton) {
                       var oldMonth = moment(scope.month);
                       scope.month = scope.month.add(1, 'month');
+                      scope.selectMonth = scope.month.format('MMMM YYYY');
                       if (typeof scope.monthChanged == 'function') {
                           scope.monthChanged(scope.month, oldMonth);
                       }
                       scope.generate();
                   }
+              };
+
+              /**
+               * Change the month based on the value of the select.
+               * @param monthString
+               */
+              scope.changeSelectMonth = function (monthString) {
+                  scope.month = moment(monthString).startOf('day');
+                  scope.generate();
               };
 
               /*Check if the date is off : unselectable*/
