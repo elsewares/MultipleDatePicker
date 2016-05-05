@@ -324,10 +324,9 @@ angular.module('multipleDatePicker', [])
 
                   if (scope.modifyOnly) {
                       if (!momentDate.selected && !momentDate.bufferDay) { //unselected and not a buffer day
-                          if (getAssociatedOriginalDate(momentDate)) { //check if it was a de-selected date
+                          if (momentDate.deselected) { //check if it was a de-selected server date
                               momentDate.selected = true;
                               multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), angular.copy(momentDate));
-                              setAssociatedModifiedDate(momentDate);
                               debugLog('Deselected original date re-selected.');
                               return;
                           } else { //plain ol' day - do nothing.
@@ -337,17 +336,22 @@ angular.module('multipleDatePicker', [])
                       }
                       if (momentDate.selected) { //currently selected date - deselect
                           momentDate.selected = false;
-                          setAssociatedModifiedDate(momentDate, 'skipped');
-                          multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), 'skipped');
-                          debugLog('Date deselected.');
-                          return;
+                          if (momentDate.bufferDay) { // selected date was a buffer day for an original date
+                              var originalDate = getAssociatedOriginalDate(momentDate);
+                              multipleDatePickerBroadcast.broadcastModifiedDate(originalDate, 'skipped');
+                              debugLog('Deselected buffer day - set original date skipped.');
+                              return;
+                          } else {
+                              multipleDatePickerBroadcast.broadcastModifiedDate(angular.copy(momentDate), 'skipped');
+                              debugLog('Original date deselected.');
+                              return;
+                          }
                       }
                       if (momentDate.bufferDay) {
                           var changeSent = false;
                           angular.forEach(momentDate.bufferDay, function (date) {
                               if (scope.isDeselectedDay(scope, date) && !changeSent) {
                                   multipleDatePickerBroadcast.broadcastModifiedDate(date, momentDate);
-                                  setAssociatedModifiedDate(momentDate);
                                   changeSent = true;
                                   debugLog('Buffer day selected - broadcasting.');
                                   return;
@@ -526,8 +530,8 @@ angular.module('multipleDatePicker', [])
                         if (date.selected) {
                             date.originalDate = getAssociatedOriginalDate(date);
                         }
-                        date.bufferDay = !date.selected && date.selectable ? scope.isBufferDay(scope, date) : false;
-                        date.deselected = !date.selected && date.bufferDay ? scope.isDeselectedDay(scope, date) : false;
+                        date.deselected = !date.selected ? scope.isDeselectedDay(scope, date) : false;
+                        date.bufferDay = !date.deselected && date.selectable ? scope.isBufferDay(scope, date) : false;
                         date.today = date.isSame(now, 'day');
                         date.past = date.isBefore(now, 'day');
                         date.future = date.isAfter(now, 'day');
