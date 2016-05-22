@@ -260,6 +260,13 @@ angular.module('multipleDatePicker', [])
                   }
               });
 
+            /**
+             * Listener for external reset signals
+             */
+            scope.$on('multipleDatePicker.reset', function () {
+                 reset();
+              });
+
               /*scope functions*/
               scope.$watch('daysSelected', function (newValue) {
                   if (newValue) {
