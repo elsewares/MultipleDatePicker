@@ -166,7 +166,7 @@ angular.module('multipleDatePicker', [])
           link: function (scope) {
 
               /*utility functions*/
-              var DEBUG = true;
+              var DEBUG = false;
               var checkNavigationButtons = function () {
                     var today = moment(),
                       previousMonth = moment(scope.month).subtract(1, 'month'),
@@ -233,13 +233,6 @@ angular.module('multipleDatePicker', [])
                 getAssociatedModifiedDate = function (date) {
                     return scope.daysSelected[getAssociatedDateIndex(date, 'original')];
                 },
-                setAssociatedModifiedDate = function (date, value) {
-                    date = momentize(date);
-                    value = value ? value : date;
-                    if (getAssociatedOriginalDate(date)) {
-                        scope.daysSelected[getAssociatedDateIndex(date, 'original')] = value;
-                    }
-                },
                 momentize = function (date) {
                     return moment(date);
                 },
@@ -251,7 +244,7 @@ angular.module('multipleDatePicker', [])
 
               scope.init = function () {
                   if (scope.calendarRange && scope.calendarRange.length > 0) {
-                      scope.month = scope.calendarRange[0].value;
+                      scope.month = moment(scope.calendarRange[0]);
                       scope.disableBackButton = true;
                   } else {
                       scope.month = moment(moment().format('MMMM YYYY'));
