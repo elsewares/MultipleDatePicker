@@ -147,7 +147,7 @@ angular.module('multipleDatePicker', [])
           '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="previousMonth()">&lt;</div>' +
           '<div class="text-center picker-month" ng-if="calendarRange.length === 0">{{month.format(\'MMMM YYYY\')}}</div>' +
           '<div class="text-center picker-month" ng-if="calendarRange.length !== 0">' +
-          '<select ng-options="mo as mo for mo in calendarRange" ng-model="selectMonth" ng-init="selectMonth = calendarRange[0]" ng-change="changeSelectMonth(selectMonth)"></select>' +
+          '<select ng-options="mo as mo for mo in calendarRange" ng-model="selectMonth" ng-init="selectMonth = calendarRange[0]"></select>' +
           '</div>' +
           '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="nextMonth()">&gt;</div>' +
           '</div>' +
@@ -268,9 +268,10 @@ angular.module('multipleDatePicker', [])
                  reset();
               });
 
-              scope.$watch('scope.calendarRange', function (newValue) {
-                if (newValue) {
-                  scope.init();
+              scope.$watch('selectMonth', function (newMonth, oldMonth) {
+                if (newMonth !== oldMonth) {
+                  scope.month = moment(newMonth).startOf('day');
+                  scope.generate();
                 }
               });
               /*scope functions*/
