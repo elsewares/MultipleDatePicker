@@ -268,7 +268,7 @@ angular.module('multipleDatePicker', [])
                  reset();
               });
 
-              $scope.$watch('calendarRange', function (newValue) {
+              scope.$watch('calendarRange', function (newValue) {
                 if (newValue) {
                   reset();
                 }
