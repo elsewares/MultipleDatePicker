@@ -268,9 +268,9 @@ angular.module('multipleDatePicker', [])
                  reset();
               });
 
-              scope.$watch('calendarRange', function (newValue) {
+              scope.$watch('scope.calendarRange', function (newValue) {
                 if (newValue) {
-                  reset();
+                  scope.init();
                 }
               });
               /*scope functions*/
@@ -296,7 +296,8 @@ angular.module('multipleDatePicker', [])
 
               //Default values.
               scope.month = scope.month || moment().startOf('day');
-              scope.selectMonth = scope.selectMonth || scope.calendarRange ? scope.calendarRange[0] : moment().startOf('day');
+              scope.calendarRange = scope.calendarRange || [];
+              scope.selectMonth = scope.selectMonth || scope.calendarRange[0] ? scope.calendarRange[0] : moment().startOf('day');
               scope.days = [];
               scope.convertedDaysSelected = scope.convertedDaysSelected || [];
               scope.weekDaysOff = scope.weekDaysOff || [];
@@ -307,7 +308,6 @@ angular.module('multipleDatePicker', [])
               scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
               scope.modifyOnly = scope.modifyOnly || false;
               scope.bufferDays = scope.bufferDays || 0;
-              scope.calendarRange = scope.calendarRange || [];
 
               debugLog(scope.calendarRange);
 
