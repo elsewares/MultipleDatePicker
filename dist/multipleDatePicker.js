@@ -245,6 +245,7 @@ angular.module('multipleDatePicker', [])
               scope.init = function () {
                   if (scope.calendarRange && scope.calendarRange.length > 0) {
                       scope.month = moment(scope.calendarRange[0]);
+                      scope.selectMonth = scope.month.format('MMMM YYYY');
                       scope.disableBackButton = true;
                   } else {
                       scope.month = moment(moment().format('MMMM YYYY'));
@@ -260,13 +261,18 @@ angular.module('multipleDatePicker', [])
                   }
               });
 
-            /**
-             * Listener for external reset signals
-             */
-            scope.$on('multipleDatePicker.reset', function () {
+              /**
+               * Listener for external reset signals
+               */
+              scope.$on('multipleDatePicker.reset', function () {
                  reset();
               });
 
+              $scope.$watch('calendarRange', function (newValue) {
+                if (newValue) {
+                  reset();
+                }
+              });
               /*scope functions*/
               scope.$watch('daysSelected', function (newValue) {
                   if (newValue) {
