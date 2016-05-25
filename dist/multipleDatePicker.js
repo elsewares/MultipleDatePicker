@@ -269,11 +269,18 @@ angular.module('multipleDatePicker', [])
               });
 
               scope.$watch('selectMonth', function (newMonth, oldMonth) {
-                if (newMonth !== oldMonth) {
-                  scope.month = moment(newMonth).startOf('day');
-                  scope.generate();
-                }
+                  if (newMonth !== oldMonth) {
+                      scope.month = moment(newMonth).startOf('day');
+                      scope.generate();
+                  }
               });
+
+              scope.$watch('calendarRange', function (range) {
+                  var firstMonth = range.length > 0 ? moment(range[0]) : moment();
+                  scope.month = firstMonth;
+                  scope.selectMonth = firstMonth.format('MMMM YYYY');
+              });
+              
               /*scope functions*/
               scope.$watch('daysSelected', function (newValue) {
                   if (newValue) {
