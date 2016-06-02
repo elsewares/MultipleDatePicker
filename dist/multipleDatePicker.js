@@ -93,6 +93,12 @@ angular.module('multipleDatePicker', [])
               modifyOnly: '=?',
               /*
                * Type: boolean
+               * Determines whether to register any date click events on the calendar at all, other than for navigation.
+               * Defaults to false.
+               */
+              readOnly: '=?',
+              /*
+               * Type: boolean
                * Set all days off
                * */
               allDaysOff: '=?',
@@ -315,6 +321,7 @@ angular.module('multipleDatePicker', [])
               scope.daysOfWeek = getDaysOfWeek();
               scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
               scope.modifyOnly = scope.modifyOnly || false;
+              scope.readOnly = scope.readOnly || false;
               scope.bufferDays = scope.bufferDays || 0;
 
               debugLog(scope.calendarRange);
@@ -331,7 +338,7 @@ angular.module('multipleDatePicker', [])
               scope.toggleDay = function (event, momentDate) {
                   event.preventDefault();
 
-                  if (momentDate.otherMonth && !scope.fireEventsForDaysOfSurroundingMonths) {
+                  if ((momentDate.otherMonth && !scope.fireEventsForDaysOfSurroundingMonths) || scope.readOnly) {
                       return;
                   }
 
