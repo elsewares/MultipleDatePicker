@@ -153,7 +153,7 @@ angular.module('multipleDatePicker', [])
           '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="previousMonth()">&lt;</div>' +
           '<div class="text-center picker-month" ng-if="calendarRange.length === 0">{{month.format(\'MMMM YYYY\')}}</div>' +
           '<div class="text-center picker-month" ng-if="calendarRange.length !== 0">' +
-          '<select ng-options="mo for mo in calendarRange" ng-model="selectMonth" ng-change="changeSelectMonth(mo)"></select> {{selectMonth}}' +
+          '<select ng-options="mo for mo in calendarRange" ng-model="selectMonth.value" ng-change="changeSelectMonth(mo)"></select>' +
           '</div>' +
           '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="nextMonth()">&gt;</div>' +
           '</div>' +
@@ -251,7 +251,7 @@ angular.module('multipleDatePicker', [])
               scope.init = function () {
                   if (scope.calendarRange && scope.calendarRange.length > 0) {
                       scope.month = moment(scope.calendarRange[0]);
-                      scope.selectMonth = scope.month.format('MMMM YYYY');
+                      scope.selectMonth.value = scope.month.format('MMMM YYYY');
                       scope.disableBackButton = true;
                   } else {
                       scope.month = moment(moment().format('MMMM YYYY'));
@@ -274,10 +274,10 @@ angular.module('multipleDatePicker', [])
                   reset();
               });
 
-              scope.$watch('selectMonth', function (newMonth, oldMonth) {
+              scope.$watch('selectMonth.value', function (newMonth, oldMonth) {
                   if (newMonth !== oldMonth) {
                       scope.month = moment(newMonth).startOf('day');
-                      scope.selectMonth = newMonth;
+                      scope.selectMonth.value = newMonth;
                   }
                   scope.generate();
               });
@@ -285,7 +285,7 @@ angular.module('multipleDatePicker', [])
               scope.$watch('calendarRange', function (range) {
                   var firstMonth = range.length > 0 ? moment(range[0]) : moment();
                   scope.month = firstMonth;
-                  scope.selectMonth = firstMonth.format('MMMM YYYY');
+                  scope.selectMonth.value = firstMonth.format('MMMM YYYY');
                   scope.generate();
               });
 
@@ -313,7 +313,8 @@ angular.module('multipleDatePicker', [])
               //Default values.
               scope.month = scope.month || moment().startOf('day');
               scope.calendarRange = scope.calendarRange || [];
-              scope.selectMonth = scope.selectMonth || scope.calendarRange[0] ? scope.calendarRange[0] : moment().startOf('day');
+              scope.selectMonth = scope.selectMonth || { value: moment().startOf('day') };
+              // scope.selectMonth = scope.selectMonth || scope.calendarRange[0] ? scope.calendarRange[0] : moment().startOf('day');
               scope.days = [];
               scope.convertedDaysSelected = scope.convertedDaysSelected || [];
               scope.weekDaysOff = scope.weekDaysOff || [];
@@ -435,7 +436,7 @@ angular.module('multipleDatePicker', [])
                   if (!scope.disableBackButton) {
                       var oldMonth = moment(scope.month);
                       scope.month = scope.month.subtract(1, 'month');
-                      scope.selectMonth = scope.month.format('MMMM YYYY');
+                      scope.selectMonth.value = scope.month.format('MMMM YYYY');
                       if (typeof scope.monthChanged === 'function') {
                           scope.monthChanged(scope.month, oldMonth);
                       }
@@ -448,7 +449,7 @@ angular.module('multipleDatePicker', [])
                   if (!scope.disableNextButton) {
                       var oldMonth = moment(scope.month);
                       scope.month = scope.month.add(1, 'month');
-                      scope.selectMonth = scope.month.format('MMMM YYYY');
+                      scope.selectMonth.value = scope.month.format('MMMM YYYY');
                       if (typeof scope.monthChanged === 'function') {
                           scope.monthChanged(scope.month, oldMonth);
                       }
