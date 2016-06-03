@@ -153,7 +153,7 @@ angular.module('multipleDatePicker', [])
           '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="previousMonth()">&lt;</div>' +
           '<div class="text-center picker-month" ng-if="calendarRange.length === 0">{{month.format(\'MMMM YYYY\')}}</div>' +
           '<div class="text-center picker-month" ng-if="calendarRange.length !== 0">' +
-          '<select ng-options="mo as mo for mo in calendarRange" ng-model="selectMonth" ng-init="selectMonth = calendarRange[0]"></select>' +
+          '<select ng-options="mo for mo in calendarRange" ng-model="selectMonth" ng-change="changeSelectMonth(mo)"></select> {{selectMonth}}' +
           '</div>' +
           '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="nextMonth()">&gt;</div>' +
           '</div>' +
@@ -271,22 +271,24 @@ angular.module('multipleDatePicker', [])
                * Listener for external reset signals
                */
               scope.$on('multipleDatePicker.reset', function () {
-                 reset();
+                  reset();
               });
 
               scope.$watch('selectMonth', function (newMonth, oldMonth) {
                   if (newMonth !== oldMonth) {
                       scope.month = moment(newMonth).startOf('day');
-                      scope.generate();
+                      scope.selectMonth = newMonth;
                   }
+                  scope.generate();
               });
 
               scope.$watch('calendarRange', function (range) {
                   var firstMonth = range.length > 0 ? moment(range[0]) : moment();
                   scope.month = firstMonth;
                   scope.selectMonth = firstMonth.format('MMMM YYYY');
+                  scope.generate();
               });
-              
+
               /*scope functions*/
               scope.$watch('daysSelected', function (newValue) {
                   if (newValue) {
@@ -320,8 +322,8 @@ angular.module('multipleDatePicker', [])
               scope.disableNextButton = false;
               scope.daysOfWeek = getDaysOfWeek();
               scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
-              scope.modifyOnly = scope.modifyOnly || false;
               scope.readOnly = scope.readOnly || false;
+              scope.modifyOnly = scope.modifyOnly || false;
               scope.bufferDays = scope.bufferDays || 0;
 
               debugLog(scope.calendarRange);
@@ -428,26 +430,26 @@ angular.module('multipleDatePicker', [])
                   }
               };
 
-              /*Navigate to previous month*/
+              /* Navigate to previous month */
               scope.previousMonth = function () {
                   if (!scope.disableBackButton) {
                       var oldMonth = moment(scope.month);
                       scope.month = scope.month.subtract(1, 'month');
                       scope.selectMonth = scope.month.format('MMMM YYYY');
-                      if (typeof scope.monthChanged == 'function') {
+                      if (typeof scope.monthChanged === 'function') {
                           scope.monthChanged(scope.month, oldMonth);
                       }
                       scope.generate();
                   }
               };
 
-              /*Navigate to next month*/
+              /* Navigate to next month */
               scope.nextMonth = function () {
                   if (!scope.disableNextButton) {
                       var oldMonth = moment(scope.month);
                       scope.month = scope.month.add(1, 'month');
                       scope.selectMonth = scope.month.format('MMMM YYYY');
-                      if (typeof scope.monthChanged == 'function') {
+                      if (typeof scope.monthChanged === 'function') {
                           scope.monthChanged(scope.month, oldMonth);
                       }
                       scope.generate();
@@ -459,7 +461,12 @@ angular.module('multipleDatePicker', [])
                * @param monthString
                */
               scope.changeSelectMonth = function (monthString) {
+                  var oldMonth = scope.month;
                   scope.month = moment(monthString).startOf('day');
+                  //scope.selectMonth = scope.month.format('MMMM YYYY');
+                  if (typeof scope.monthChanged === 'function') {
+                      scope.monthChanged(scope.month, oldMonth);
+                  }
                   scope.generate();
               };
 
