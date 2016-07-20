@@ -250,7 +250,8 @@ angular.module('multipleDatePicker', [])
 
               scope.init = function () {
                   if (scope.calendarRange && scope.calendarRange.length > 0) {
-                      scope.month = moment(scope.calendarRange[0]);
+                      var mth = moment(scope.calendarRange[0], 'MMMM YYYY');
+                      scope.month = mth;
                       scope.selectMonth.value = scope.month.format('MMMM YYYY');
                       scope.disableBackButton = true;
                   } else {
@@ -276,17 +277,17 @@ angular.module('multipleDatePicker', [])
 
               scope.$watch('selectMonth.value', function (newMonth, oldMonth) {
                   if (newMonth !== oldMonth) {
-                      scope.month = moment(newMonth).startOf('day');
+                      scope.month = moment(newMonth, 'MMMM YYYY').startOf('day');
                       scope.selectMonth.value = newMonth;
+                      scope.generate();
                   }
-                  scope.generate();
               });
 
               scope.$watch('calendarRange', function (range) {
-                  var firstMonth = range.length > 0 ? moment(range[0]) : moment();
+                  var firstMonth = range.length > 0 ? moment(range[0], 'MMMM YYYY') : moment();
                   scope.month = firstMonth;
                   scope.selectMonth.value = firstMonth.format('MMMM YYYY');
-                  scope.generate();
+                  //scope.generate();
               });
 
               /*scope functions*/
@@ -297,15 +298,15 @@ angular.module('multipleDatePicker', [])
               }, true);
 
               scope.$watch('weekDaysOff', function () {
-                  scope.generate();
+                  //scope.generate();
               }, true);
 
               scope.$watch('highlightDays', function () {
-                  scope.generate();
+                  //scope.generate();
               }, true);
 
               scope.$watch('allDaysOff', function () {
-                  scope.generate();
+                  //scope.generate();
               }, true);
 
               //internal scope variables
@@ -314,7 +315,6 @@ angular.module('multipleDatePicker', [])
               scope.month = scope.month || moment().startOf('day');
               scope.calendarRange = scope.calendarRange || [];
               scope.selectMonth = scope.selectMonth || { value: moment().startOf('day') };
-              // scope.selectMonth = scope.selectMonth || scope.calendarRange[0] ? scope.calendarRange[0] : moment().startOf('day');
               scope.days = [];
               scope.convertedDaysSelected = scope.convertedDaysSelected || [];
               scope.weekDaysOff = scope.weekDaysOff || [];
@@ -397,7 +397,6 @@ angular.module('multipleDatePicker', [])
 
                       if (momentDate.selectable && !prevented) {
                           momentDate.selected = !momentDate.selected;
-
                           if (momentDate.selected) {
                               scope.convertedDaysSelected.push(momentDate);
                           } else {
